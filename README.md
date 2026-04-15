@@ -52,7 +52,10 @@ Download the latest `.dmg` from [GitHub Releases](https://github.com/hzeeshan/fo
 
 1. Download `ForcedBreak-1.0.0-arm64.dmg` (Apple Silicon Macs)
 2. Open the `.dmg` and drag ForcedBreak to your Applications folder
-3. If macOS blocks the app, run: `xattr -cr /Applications/ForcedBreak.app`
+3. If macOS shows "ForcedBreak is damaged", run this in Terminal:
+   ```bash
+   sudo xattr -cr /Applications/ForcedBreak.app
+   ```
 4. Open ForcedBreak from Applications
 
 ## Tech Stack
