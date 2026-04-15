@@ -14,18 +14,22 @@ class TickMenuBarLabel extends Command
 
     public function handle(): void
     {
+        $lastLabel = '';
+
         while (true) {
+            $start = microtime(true);
+
             try {
                 // Skip updating while on break
                 if (cache()->get('on_break', false)) {
-                    sleep(1);
+                    $this->sleepUntilNextSecond($start);
                     continue;
                 }
 
                 $secondsLeft = cache()->get('break_seconds_left');
 
                 if ($secondsLeft === null) {
-                    sleep(1);
+                    $this->sleepUntilNextSecond($start);
                     continue;
                 }
 
@@ -33,14 +37,12 @@ class TickMenuBarLabel extends Command
                 $secondsLeft = max(0, $secondsLeft - 1);
                 cache()->put('break_seconds_left', $secondsLeft, now()->addHours(2));
 
-                // Update the menu bar label
+                // Only update label when it actually changes (avoids unnecessary API calls)
                 $label = sprintf('%02d:%02d', intdiv($secondsLeft, 60), $secondsLeft % 60);
-                MenuBar::label($label);
-
-                // TODO v2: Pre-break warning notification
-                // NativePHP Notification facade doesn't work from child processes.
-                // Tried HTTP bridge approach but it also didn't deliver reliably.
-                // Revisit when NativePHP adds event-based notification support.
+                if ($label !== $lastLabel) {
+                    MenuBar::label($label);
+                    $lastLabel = $label;
+                }
 
                 // Trigger break overlay instantly when timer hits zero
                 if ($secondsLeft <= 0) {
@@ -49,12 +51,21 @@ class TickMenuBarLabel extends Command
                     $this->openOverlayOnAllScreens();
                 }
             } catch (\Throwable $e) {
-                // Log but don't crash — keep the loop alive
                 \Log::warning('TickMenuBarLabel error: ' . $e->getMessage());
             }
 
-            sleep(1);
+            $this->sleepUntilNextSecond($start);
         }
+    }
+
+    /**
+     * Sleep precisely until the next second boundary to avoid CPU spin.
+     */
+    protected function sleepUntilNextSecond(float $start): void
+    {
+        $elapsed = microtime(true) - $start;
+        $remaining = max(0.1, 1.0 - $elapsed);
+        usleep((int) ($remaining * 1_000_000));
     }
 
     protected function openOverlayOnAllScreens(): void
