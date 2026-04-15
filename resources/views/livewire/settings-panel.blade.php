@@ -250,7 +250,11 @@
 
     {{-- Footer --}}
     <div class="px-5 pb-4 pt-2 border-t border-white/[0.08]">
-        <p class="text-center text-white/15 text-[10px]">ForcedBreak v1.0.0</p>
+        <p class="text-center text-[10px]">
+            <span class="text-white/15">ForcedBreak v1.0.0</span>
+            <span class="text-white/10 mx-1">|</span>
+            <a href="https://hafiz.dev" class="text-white/20 hover:text-white/40 transition-colors" target="_blank">hafiz.dev</a>
+        </p>
     </div>
 
 </div>
